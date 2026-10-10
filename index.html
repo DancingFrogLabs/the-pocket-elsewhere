@@ -307,7 +307,7 @@
   function refreshRaycasters() {
     if (!window.AFRAME) return;
     // The active portal/gift only should be interactive; hidden worlds cannot steal a gaze hit.
-    document.querySelectorAll('.vrDoor .tap').forEach(el => el.classList.toggle('tap', current < 0));
+   document.querySelectorAll('.vrDoor > a-circle').forEach(el => el.classList.toggle('tap', current < 0));
     $('vrGift').classList.toggle('tap', current >= 0);
     $('vrBack').querySelector('a-box').classList.toggle('tap', current >= 0);
     scene.querySelectorAll('[raycaster]').forEach(el => {
