@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
-  <title>The Pocket Elsewhere | Immersive Experiment 2</title>
+  <title>The Pocket Elsewhere | Experiment 3: The Whispering Tree</title>
   <style>
     :root { --ink:#1c3040; --muted:#647787; --edge:#dfe9ee; --white:#fff; --teal:#167a84; }
     *,*::before,*::after {box-sizing:border-box}
@@ -55,6 +55,11 @@
     #message {margin:10px auto 20px;max-width:650px;font-size:clamp(23px,3.5vw,38px);letter-spacing:-.035em;line-height:1.3;font-weight:700;min-height:95px;display:flex;align-items:center;justify-content:center}
     .sub {font-size:13px;color:#6c808c;margin:0 auto 24px}
     .detail-actions {display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+    #storyAction {display:none;margin:12px auto 0;max-width:680px}
+    #storyAction.show {display:block}
+    #storyAction .pill {background:#63517f;color:#fff;border-color:#63517f}
+    #storyProgress {display:block;margin-top:8px;color:#617480;font-size:13px}
+    #storyAction p {color:#617480;font-size:14px;line-height:1.5;margin:0 0 10px}
     #vrScene {position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .3s}
     #vrScene.in-vr {opacity:1;pointer-events:auto;z-index:100}
     #vrStatus {margin-left:auto}
@@ -64,7 +69,7 @@
     @media(max-width:650px){#page{padding:22px 16px}.intro{margin:35px auto 22px}.doors{gap:9px}.door{padding:7px 7px 13px;border-radius:12px}.art{height:155px;border-radius:8px}.portal{width:64%;border-width:3px}.door strong{font-size:14px;margin:10px 3px 4px}.door span.desc{font-size:11px;margin:0 3px}.footer{align-items:flex-start}.tiny{display:none}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after {animation-duration:.01ms !important;transition-duration:.01ms !important}}
 
-    /* Immersive Experiment 2: desktop preview and VR use the same world. */
+    /* Experiment 3: desktop preview and Quest VR use the same world. */
     #vrScene {position:fixed;inset:0;z-index:1;opacity:0;pointer-events:none;transition:opacity .25s ease}
     #vrScene.preview, #vrScene.in-vr {opacity:1;pointer-events:auto;z-index:100}
     #previewToolbar {display:none;position:fixed;z-index:110;left:16px;right:16px;top:16px;align-items:center;gap:12px;flex-wrap:wrap;color:#f4ffff;font-size:13px;pointer-events:none}
@@ -98,10 +103,11 @@
       <div id="message">Hello, traveler.</div>
       <p class="sub">Touch the little gift as many times as you like. Nothing here runs out.</p>
       <div class="detail-actions"><button id="giftBtn" class="pill primary" type="button">Open another little gift</button><button id="backBtn" class="pill" type="button">Try another door</button></div>
+      <div id="storyAction" aria-live="polite"><p>A story is waiting in this orchard. Turn the pages and watch the trees remember.</p><button id="storyPageBtn" class="pill" type="button">Turn the story page</button><span id="storyProgress">The story has not begun yet.</span></div>
     </div>
   </section>
   <footer class="footer">
-    <span>Built for a quiet moment. Sitting is perfect.</span>
+    <span>Experiment 3: The Whispering Tree · Sitting is perfect.</span>
     <div class="button-row"><button id="soundBtn" class="pill" type="button" aria-pressed="false">Sound: off</button><button id="motionBtn" class="pill" type="button" aria-pressed="false">Motion: gentle</button><button id="previewBtn" class="pill" type="button">Explore in 3D</button><button id="vrBtn" class="pill primary" type="button">Enter immersive VR</button></div>
     <span id="vrStatus" class="status"></span>
   </footer>
@@ -120,6 +126,7 @@
     <a-ring position="0 -0.53 -3.6" rotation="-90 0 0" radius-inner="2.4" radius-outer="2.43" color="#79b8c5" material="opacity:.4; transparent:true; side:double"></a-ring>
     <a-ring position="0 -0.525 -3.6" rotation="-90 0 0" radius-inner="3.05" radius-outer="3.065" color="#a4d0dd" material="opacity:.18; transparent:true; side:double"></a-ring>
     <a-text value="THE POCKET ELSEWHERE" position="0 3.12 -3.6" width="5.6" align="center" color="#e7f9fc"></a-text>
+    <a-text value="EXPERIMENT 3" position="0 3.42 -3.6" width="2.5" align="center" color="#b8dfe2"></a-text>
     <a-text value="THREE DOORS. NO WRONG CHOICES." position="0 2.85 -3.6" width="4.1" align="center" color="#b4d4dc"></a-text>
     <a-text value="Look gently at a doorway, or point and click" position="0 0.12 -3.35" width="3.9" align="center" color="#b8d5dc"></a-text>
     <a-entity id="hubStars"></a-entity>
@@ -201,6 +208,11 @@
       <a-sphere position="1.1 4.5 0" radius="1.8" color="#9a789c"></a-sphere>
     </a-entity>
     <a-entity id="orchardFireflies"></a-entity>
+    <a-entity id="storyBloomOne" visible="false"></a-entity>
+    <a-entity id="storyBloomTwo" visible="false"></a-entity>
+    <a-entity id="storyBloomThree" visible="false"></a-entity>
+    <a-ring id="storyHalo" visible="false" position="0 3.75 -8.2" radius-inner="1.7" radius-outer="1.725" color="#d6fff0" material="shader:flat; transparent:true; opacity:.72; side:double" animation="property:rotation; to:0 0 360; loop:true; dur:29000; easing:linear"></a-ring>
+    <a-entity id="storyFinale" visible="false"></a-entity>
   </a-entity>
 
   <!-- Observatory: stars in every direction, a planetarium, and a telescope. -->
@@ -222,17 +234,28 @@
     <a-entity id="constellationLines"></a-entity>
   </a-entity>
 
-  <!-- A single shared, easy-to-reach interaction panel for all three worlds. -->
+  <!-- A shared interaction panel, with an optional book in Midnight Orchard. -->
   <a-entity id="vrInside" visible="false">
     <a-sphere id="vrGift" class="tap" position="0 1.73 -3.1" radius=".54" material="color:#8fded8; emissive:#467c90; emissiveIntensity:.48; roughness:.2; transparent:true; opacity:.95" animation="property:position; dir:alternate; dur:3800; easing:easeInOutSine; loop:true; to:0 1.88 -3.1"></a-sphere>
     <a-torus id="vrRing" position="0 1.73 -3.1" radius=".78" radius-tubular=".017" material="color:#cbfffc; emissive:#80c7c8; emissiveIntensity:.55" animation="property:rotation; to:0 360 30; loop:true; dur:18000; easing:linear"></a-torus>
     <a-text id="vrWorldTitle" value="" position="0 2.82 -3.0" align="center" width="4.3" color="#e7f9fc"></a-text>
     <a-text id="vrQuote" value="" position="0 .79 -2.8" align="center" baseline="center" wrap-count="31" width="3.85" color="#fffaf3"></a-text>
     <a-text value="Look at the glowing gift for another thought" position="0 .20 -2.8" align="center" width="3.55" color="#d4e4ec"></a-text>
-    <a-entity id="vrBack" position="0 -.23 -2.7">
+    <!-- Deliberately off to the right: reading the central quote should not activate Return. -->
+    <a-entity id="vrBack" position="1.8 1.07 -2.8" rotation="0 -18 0">
       <a-box class="tap" color="#285d70" width="1.55" height=".37" depth=".08" material="roughness:.5; emissive:#184152; emissiveIntensity:.35"></a-box>
       <a-text value="RETURN TO THE DOORS" position="0 0 .055" align="center" width="2.5" color="#ffffff"></a-text>
     </a-entity>
+    <!-- A tangible book: gaze at it or point a controller to turn a page. -->
+    <a-entity id="vrStoryBook" visible="false" position="-1.65 1.45 -2.85" rotation="0 16 0"
+              animation="property:position; to:-1.65 1.54 -2.85; dir:alternate; loop:true; dur:4000; easing:easeInOutSine">
+      <a-box id="vrStoryTap" width=".72" height=".88" depth=".13" material="color:#685080; emissive:#ad83ce; emissiveIntensity:.38; roughness:.5"></a-box>
+      <a-box position="0 0 .073" width=".62" height=".78" depth=".012" material="color:#856a9c; emissive:#e0b4ef; emissiveIntensity:.14"></a-box>
+      <a-text value="THE WHISPERING TREE" position="0 .12 .09" align="center" width="1.18" wrap-count="12" color="#fff3e9"></a-text>
+      <a-text value="TURN A PAGE" position="0 -.27 .09" align="center" width="1.15" color="#ffe8bd"></a-text>
+      <a-ring position="0 0 -.085" radius-inner=".57" radius-outer=".59" color="#edc6fc" material="shader:flat; transparent:true; opacity:.6; side:double"></a-ring>
+    </a-entity>
+    <a-text id="vrStoryProgress" value="" visible="false" position="-1.65 .66 -2.8" align="center" width="1.9" color="#ffdeed"></a-text>
   </a-entity>
 
   <!-- Seated-first: no artificial locomotion, teleportation, or thumbstick movement. -->
@@ -271,9 +294,18 @@
       'The telescope can see tomorrow. It says there is more magic to find.'
     ]}
   ];
+  // A complete tiny story. Each page also changes the surrounding orchard.
+  const orchardStory = [
+    'Once, an old tree stopped telling stories. It thought the world had stopped listening.',
+    'A little lantern arrived and asked for nothing. It simply stayed beside the roots.',
+    'The tree remembered springtime, laughter, and all the travelers it had sheltered.',
+    'One by one, its branches lit up. Each new light held a story waiting to be told.',
+    'The lantern whispered: even the oldest trees are allowed to rest.'
+  ];
   const $ = id => document.getElementById(id);
   let current = -1, giftIndex = [0,0,0], sound = false, audioCtx = null;
   let inVR = false, previewing = false, motionEnabled = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let storyPage = -1, lastStoryClick = 0, lastTransition = 0;
   const scene = $('vrScene'), status = $('vrStatus');
   const choiceIntro = $('chooseIntro'), choice = $('choose'), detail = $('detail');
 
@@ -307,11 +339,14 @@
   function refreshRaycasters() {
     if (!window.AFRAME) return;
     // The active portal/gift only should be interactive; hidden worlds cannot steal a gaze hit.
-   document.querySelectorAll('.vrDoor > a-circle').forEach(el => el.classList.toggle('tap', current < 0));
+    // Select the portal surfaces even when they are temporarily NOT interactive.
+    // Selecting '.vrDoor .tap' here would miss them after a world has been opened.
+    document.querySelectorAll('.vrDoor > a-circle').forEach(el => el.classList.toggle('tap', current < 0));
     $('vrGift').classList.toggle('tap', current >= 0);
     $('vrBack').querySelector('a-box').classList.toggle('tap', current >= 0);
+    $('vrStoryTap').classList.toggle('tap', current === 1);
     scene.querySelectorAll('[raycaster]').forEach(el => {
-      const rc = el.components.raycaster;
+      const rc = el.components && el.components.raycaster;
       if (rc && rc.refreshObjects) rc.refreshObjects();
     });
   }
@@ -319,7 +354,12 @@
   function chooseWorld(n) {
     current = n;
     giftIndex[n] = 0;
+    storyPage = -1;
+    lastTransition = Date.now();
     const w = worlds[n];
+    $('storyAction').classList.toggle('show', n === 1);
+    $('storyProgress').textContent = 'The story has not begun yet.';
+    updateStoryScenery();
     choiceIntro.classList.add('hidden'); choice.classList.add('hidden'); detail.classList.add('show');
     $('detailArt').className = 'detail-art ' + w.key;
     $('detailSymbol').textContent = w.sym;
@@ -334,18 +374,28 @@
       $('vrGift').setAttribute('material', 'emissive', w.sphere);
       $('vrRing').setAttribute('material', 'color', w.light);
       $('vrWorldTitle').setAttribute('value', w.name.toUpperCase());
+      $('vrStoryBook').setAttribute('visible', n === 1);
+      $('vrStoryProgress').setAttribute('visible', n === 1);
+      $('vrStoryProgress').setAttribute('value', n === 1 ? 'A STORY IS WAITING' : '');
       refreshRaycasters();
     }
   }
 
   function back() {
+    // Avoid accidental return immediately after a portal transition in gaze mode.
+    if (current < 0 || (inVR && Date.now() - lastTransition < 1900)) return;
     current = -1;
+    storyPage = -1;
+    $('storyAction').classList.remove('show');
+    updateStoryScenery();
     choiceIntro.classList.remove('hidden'); choice.classList.remove('hidden'); detail.classList.remove('show');
     noteSound();
     if (window.AFRAME) {
       $('vrHub').setAttribute('visible', true);
       ['lagoonWorld','orchardWorld','observatoryWorld'].forEach(id => $(id).setAttribute('visible', false));
       $('vrInside').setAttribute('visible', false);
+      $('vrStoryBook').setAttribute('visible', false);
+      $('vrStoryProgress').setAttribute('visible', false);
       $('vrSky').setAttribute('color', '#12233a');
       refreshRaycasters();
     }
@@ -360,6 +410,31 @@
       orb.object3D.scale.set(1.14,1.14,1.14);
       setTimeout(() => { if (orb.object3D) orb.object3D.scale.set(1,1,1); }, 250);
     }
+  }
+
+  function updateStoryScenery() {
+    // The groups exist in the orchard even before the story is opened.
+    if (!window.AFRAME) return;
+    ['storyBloomOne','storyBloomTwo','storyBloomThree','storyHalo','storyFinale']
+      .forEach((id, i) => $(id).setAttribute('visible', current === 1 && storyPage >= i));
+  }
+
+  function turnStoryPage() {
+    if (current !== 1) return;
+    // A single gaze or controller action must never skip two pages.
+    const now = Date.now();
+    if (now - lastStoryClick < 650) return;
+    lastStoryClick = now;
+    storyPage = (storyPage + 1) % orchardStory.length;
+    const line = orchardStory[storyPage];
+    $('message').textContent = line;
+    $('storyProgress').textContent = `Page ${storyPage + 1} of ${orchardStory.length}`;
+    if (window.AFRAME) {
+      $('vrQuote').setAttribute('value', line);
+      $('vrStoryProgress').setAttribute('value', `PAGE ${storyPage + 1} / ${orchardStory.length}`);
+      updateStoryScenery();
+    }
+    noteSound();
   }
 
   function setMotion(enabled) {
@@ -401,6 +476,28 @@
     addLights('hubStars', 100, 341, {minRadius:.015,maxRadius:.043,width:32,minY:.3,maxY:10,minZ:-23,maxZ:4,colors:['#c1e6ed','#fff4e8','#c4c4fa']});
     addLights('lagoonLights', 50, 521, {minRadius:.025,maxRadius:.09,width:18,minY:.05,maxY:4,minZ:-13,maxZ:1,colors:['#b9fff0','#87dfe5','#d7d0ff'],animate:true});
     addLights('orchardFireflies', 65, 814, {minRadius:.025,maxRadius:.075,width:14,minY:.2,maxY:4.2,minZ:-12,maxZ:1,colors:['#f7d6a4','#c4f3cc','#ffe4ed'],animate:true});
+    // Three flowering trees, a halo, and a little finale of stars appear as the story progresses.
+    [
+      {id:'storyBloomOne', seed:1201, center:[-3.2,3.1,-5.6], count:22, spread:1.2, colors:['#ffe2a6','#ffbfcf','#fff4d7']},
+      {id:'storyBloomTwo', seed:1202, center:[3.3,3.15,-6.4], count:24, spread:1.3, colors:['#f5c2ff','#e9ddff','#ffe7f3']},
+      {id:'storyBloomThree', seed:1203, center:[0,4.5,-9.4], count:26, spread:1.65, colors:['#c9fff2','#fce6b6','#f6d3ff']},
+      {id:'storyFinale', seed:1204, center:[0,3.7,-6.9], count:34, spread:2.8, colors:['#fff2c9','#d8f9ff','#e8d1ff']}
+    ].forEach(group => {
+      const rand = makeRng(group.seed), root = $(group.id);
+      for (let i = 0; i < group.count; i++) {
+        const a = rand() * Math.PI * 2, b = (rand()-.5)*1.7;
+        const radius = group.spread * (.35 + .65*rand());
+        const x = group.center[0] + Math.cos(a)*radius;
+        const y = group.center[1] + Math.sin(a)*radius*.65 + b*.35;
+        const z = group.center[2] + (rand()-.5)*group.spread;
+        const el = document.createElement('a-sphere');
+        el.setAttribute('radius', (.065 + rand()*.105).toFixed(3));
+        el.setAttribute('position', `${x.toFixed(2)} ${y.toFixed(2)} ${z.toFixed(2)}`);
+        el.setAttribute('material', `shader:flat; color:${group.colors[Math.floor(rand()*group.colors.length)]}; transparent:true; opacity:.88`);
+        if (i % 3 === 0) el.setAttribute('animation', `property:position; to:${x.toFixed(2)} ${(y+.18).toFixed(2)} ${z.toFixed(2)}; dir:alternate; loop:true; dur:${(3300+rand()*2100)|0}; easing:easeInOutSine`);
+        root.appendChild(el);
+      }
+    });
     addLights('observatoryStars', 160, 927, {minRadius:.015,maxRadius:.057,width:38,minY:.3,maxY:16,minZ:-26,maxZ:6,colors:['#f3e6fb','#d7eaff','#ffe2cf']});
     // Constellation segments are deliberately simple cylinders, not an external 3D model.
     const segments = [
@@ -460,6 +557,7 @@
 
   document.querySelectorAll('.door').forEach(el => el.addEventListener('click', () => chooseWorld(+el.dataset.world)));
   $('giftBtn').addEventListener('click', gift);
+  $('storyPageBtn').addEventListener('click', turnStoryPage);
   $('backBtn').addEventListener('click', back);
   $('soundBtn').addEventListener('click', () => {
     sound = !sound;
@@ -484,6 +582,7 @@
         el.querySelector('.tap').addEventListener('click', () => chooseWorld(+el.dataset.world));
       });
       $('vrGift').addEventListener('click', gift);
+      $('vrStoryTap').addEventListener('click', turnStoryPage);
       $('vrBack').querySelector('.tap').addEventListener('click', back);
       initScene();
     };
